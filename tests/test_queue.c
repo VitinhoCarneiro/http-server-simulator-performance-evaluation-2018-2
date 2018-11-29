@@ -15,7 +15,7 @@ int main ()
 	int i, result, *popped;
 	int elements[] = {4, 8, 15, 16, 23, 42};
 	
-	_queue *q = queue_allocate(5);
+	queue *q = queue_allocate(5);
 	printf("Queue initialized, q_start = %d, q_length = %d, max_q_length = %d\n", q->q_start, q->q_length, q->max_q_length);
 	
 	for (i = 0; i < 6; i++)

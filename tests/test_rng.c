@@ -13,7 +13,7 @@
 int main ()
 {
 	int i;
-	_rng32_state rng[1];
+	rng32_state rng[1];
 
 	*rng = 1;
 	for (i = 0; i < 30; i++)

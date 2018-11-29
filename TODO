@@ -1,0 +1,24 @@
+Things to do:
+
+- Implement random variables
+    - (DONE) Exponential
+
+
+To simulate my server, I need:
+- Queue to store incoming events
+- Incoming event generator
+    - I need to implement random variable distributions (exponential in this case)
+- Server
+    - The server picks one event from the start of the queue and processes it in an exponentially random amount of time.
+    - The server just idles if the queue is empty
+- I need to know:
+    - The portion of time the server is idle
+    - The distribution (mean and variance) of:
+        - Rate of incoming requests (demand)
+        - Rate of served requests (throughput)
+        - Rate of dropped requests (dropout)
+        - Rate of requests rejected by timeout (timeout)
+        - Server load (demand/throughput)
+        - Queue length
+        - Turnaround time
+        - Service time
