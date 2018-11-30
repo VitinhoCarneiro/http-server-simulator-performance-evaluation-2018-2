@@ -10,17 +10,28 @@
 
 typedef struct __queue
 {
-	void **data;
+	void *data;
 	uint32_t q_start;
 	uint32_t q_length;
 	uint32_t max_q_length;
+	size_t unit_size;
 } queue;
 
-/* -------------------------------------------------
- * Allocates a queue with a given max_length.
- * Returns NULL if the queue cannot be allocated.
- * ---------------------------------------------- */
-queue *queue_allocate (uint32_t max_length);
+/* ----------------------------------------------------------
+ * Allocates a queue with a given unit_size and max_length. |
+ * Returns NULL if the queue cannot be allocated.           |
+ * - max_length must be under 2^31                          |
+ * ------------------------------------------------------- */
+queue *queue_allocate (size_t unit_size, uint32_t max_length);
+
+/* --------------------------------------------------
+ * Reallocates a queue with the given max_length.   |
+ * Returns NULL if the queue cannot be reallocated. |
+ * - new_max_length must be under 2^31              |
+ * - new_max_length must not be less than the       |
+ *   number of elements currently in the queue.     |
+ * ----------------------------------------------- */
+queue *queue_reallocate (queue *q, uint32_t new_max_length);
 
 /* ------------------------------------------------------------------
  * Pops the element in the end of the queue and returns it.
