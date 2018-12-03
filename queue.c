@@ -59,6 +59,13 @@ void *queue_pop (queue *q)
 	return q->data + q->unit_size * ((q->max_q_length + q->q_start - q->q_length - 1) % q->max_q_length);
 }
 
+void *queue_index (queue *q, int32_t index)
+{
+	if (index >= 0)
+		return q->data + q->unit_size * ((q->max_q_length + q->q_start - q->q_length + index) % q->max_q_length);
+	return q->data + q->unit_size * ((q->max_q_length + q->q_start - (-index % q->max_q_length)) % q->max_q_length);
+}
+
 int queue_push (queue *q, void *dptr)
 {
 	if (q->q_length >= q->max_q_length) return 0;

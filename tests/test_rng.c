@@ -15,7 +15,7 @@ int main ()
 	int i;
 	rng32_state rng[1];
 
-	*rng = 1;
+	*rng = 10;
 	for (i = 0; i < 30; i++)
 	{
 		printf("%u\n", rng_xorshift(rng));

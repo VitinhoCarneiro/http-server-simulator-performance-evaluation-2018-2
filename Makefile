@@ -1,7 +1,13 @@
 CC = gcc
+# Do not modify anything below here.
 CFLAGS = -Wall -Wextra -Werror -std=c99 -O2
 
-tests : tests/test_rng-bin tests/test_queue-bin tests/test_rand_exp-bin
+bin : httpsim
+
+httpsim : random_var.h random_var.o queue.h queue.o rng.o
+	$(CC) $(CFLAGS) -o httpsim httpsim.c random_var.o queue.o rng.o -lm
+
+tests/ : tests/test_rng-bin tests/test_queue-bin tests/test_rand_exp-bin
 
 tests/test_rand_exp-bin : tests/test_rand_exp.c random_var.h random_var.o rng.o
 	$(CC) $(CFLAGS) -o tests/test_rand_exp-bin tests/test_rand_exp.c random_var.o rng.o -lm
@@ -22,4 +28,4 @@ queue.o : queue.c queue.h
 	$(CC) $(CFLAGS) -c queue.c
 
 clean :
-	rm -fv *.o tests/*-bin
+	rm -fv *.o tests/*-bin httpsim

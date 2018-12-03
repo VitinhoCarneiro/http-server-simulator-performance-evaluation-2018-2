@@ -29,7 +29,7 @@ int main ()
 	printf("Queue elements:\n {");
 	for (i = 0; i < 5; i++)
 	{
-		printf("%d ", *(int*)(q->data + q->unit_size * i));
+		printf("%d ", *(int*) queue_index(q, i));
 	}
 	printf("}\n");
 	printf("Reallocating array of %p at %p to size 8...\n", q, q->data);
@@ -42,7 +42,13 @@ int main ()
 	printf("Queue elements:\n {");
 	for (i = 0; i < 8; i++)
 	{
-		printf("%d ", *(int*)(q->data + q->unit_size * i));
+		printf("%d ", *(int*) queue_index(q, i));
+	}
+	printf("}\n");
+	printf("Queue elements:\n {");
+	for (i = 0; i < 8; i++)
+	{
+		printf("%d ", *(int*) queue_index(q, i - 8));
 	}
 	printf("}\n");
 	for (i = 0; i < 6; i++)

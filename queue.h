@@ -36,9 +36,18 @@ queue *queue_reallocate (queue *q, uint32_t new_max_length);
 /* ------------------------------------------------------------------
  * Pops the element in the end of the queue and returns it.
  * Returns NULL if the queue is empty.
- * (it's your problem if you're storing null objects in the queue) 
  * --------------------------------------------------------------- */
 void *queue_pop (queue *q);
+
+/* -------------------------------------------------------------------
+ * Returns a pointer to the element in the given position of the     |
+ * queue, from the queue start (oldest element).                     |
+ * Use negative numbers to index from the end of the queue           |
+ * (-1 is the last element).                                         |
+ * If you index garbage in the inactive area of the queue,           |
+ * it's your problem to deal with... check the goddamn queue length. |
+ * -----------------------------------------------------------------*/
+void *queue_index (queue *q, int32_t index);
 
 /* ---------------------------------------------------------------------------------
  * Pushes a given element into the queue.
