@@ -17,14 +17,14 @@
 
 typedef struct _req
 {
-	float timestamp;
-	float waiting_time;
-	float service_time;
+	double timestamp;
+	double waiting_time;
+	double service_time;
 } http_request;
 
 typedef struct _qlog
 {
-	float timestamp;
+	double timestamp;
 	uint32_t length;
 } queue_len_log;
 
@@ -73,10 +73,10 @@ int main (int argc, char** argv)
 {
 	/* TODO: Read these from arguments */
 	uint32_t request_queue_length_max = 50;
-	float request_mean_delay = 15.f;
-	float mean_service_time = 20.f;
-	float request_timeout = 1200.f;
-	float max_simulation_time = 5.f;
+	double request_mean_delay = 15.;
+	double mean_service_time = 20.;
+	double request_timeout = 1200.;
+	double max_simulation_time = 5.;
 	uint32_t seed = 1;
 	int arg;
 
@@ -86,7 +86,7 @@ int main (int argc, char** argv)
 		{
 			if (strcmp(argv[arg], "-rd") == 0 || strcmp(argv[arg], "--request-delay") == 0)
 			{
-				if (!sscanf(argv[++arg], "%f", &request_mean_delay))
+				if (!sscanf(argv[++arg], "%lf", &request_mean_delay))
 				{
 					fprintf(stderr, "ERROR: Invalid value for option `%s' (mean request delay): `%s'.\nPlease check your command syntax and try again.\n", argv[arg - 1], argv[arg]);
 					show_usage(argv[0]);
@@ -95,7 +95,7 @@ int main (int argc, char** argv)
 			}
 			else if (strcmp(argv[arg], "-svt") == 0 || strcmp(argv[arg], "--service-time") == 0)
 			{
-				if (!sscanf(argv[++arg], "%f", &mean_service_time))
+				if (!sscanf(argv[++arg], "%lf", &mean_service_time))
 				{
 					fprintf(stderr, "ERROR: Invalid value for option `%s' (mean service time): `%s'.\nPlease check your command syntax and try again.\n", argv[arg - 1], argv[arg]);
 					show_usage(argv[0]);
@@ -104,7 +104,7 @@ int main (int argc, char** argv)
 			}
 			else if (strcmp(argv[arg], "-to") == 0 || strcmp(argv[arg], "--timeout") == 0)
 			{
-				if (!sscanf(argv[++arg], "%f", &request_timeout))
+				if (!sscanf(argv[++arg], "%lf", &request_timeout))
 				{
 					fprintf(stderr, "ERROR: Invalid value for option `%s' (request timeout): `%s'.\nPlease check your command syntax and try again.\n", argv[arg - 1], argv[arg]);
 					show_usage(argv[0]);
@@ -122,7 +122,7 @@ int main (int argc, char** argv)
 			}
 			else if (strcmp(argv[arg], "-t") == 0 || strcmp(argv[arg], "--time") == 0)
 			{
-				if (!sscanf(argv[++arg], "%f", &max_simulation_time))
+				if (!sscanf(argv[++arg], "%lf", &max_simulation_time))
 				{
 					fprintf(stderr, "ERROR: Invalid value for option `%s' (max simulation time): `%s'.\nPlease check your command syntax and try again.\n", argv[arg - 1], argv[arg]);
 					show_usage(argv[0]);
@@ -170,10 +170,10 @@ int main (int argc, char** argv)
 	queue *request_queue = queue_allocate(sizeof(http_request), request_queue_length_max);
 
 	/* Simulation state variables */
-	float current_timestamp = 0.f;
-	float next_request_arrival = rand_exponential(request_mean_delay);
+	double current_timestamp = 0.;
+	double next_request_arrival = rand_exponential(request_mean_delay);
 	int server_is_processing = 0;
-	float current_request_processing_end = 0.f;
+	double current_request_processing_end = 0.;
 	http_request req_in_service;
 
 	/* Statistic logging variables */
@@ -189,18 +189,18 @@ int main (int argc, char** argv)
 	uint32_t timestamp_report_delay = 1000, timestamp_report_counter = 1000;
 	
 
-	printf("Running simulation for %.3f seconds - RNG seed is %u, computed simulation seed is %u.\n", max_simulation_time / 1000, initial_seed, seed);
+	printf("Running simulation for %.3lf seconds - RNG seed is %u, computed simulation seed is %u.\n", max_simulation_time / 1000, initial_seed, seed);
 	printf("\
-Parameters - mean request delay = %.3f ms,\n\
-              mean service time = %.3f ms,\n\
-                        timeout = %.3f ms,\n\
+Parameters - mean request delay = %.3lf ms,\n\
+              mean service time = %.3lf ms,\n\
+                        timeout = %.3lf ms,\n\
            maximum queue length = %u\n", request_mean_delay, mean_service_time, request_timeout, request_queue_length_max);
 
 	while (current_timestamp < max_simulation_time)
 	{
 		if (--timestamp_report_counter == 0)
 		{
-			fprintf(stderr, "Current time: %5.3f s\r", current_timestamp / 1000);
+			//fprintf(stderr, "Current time: %5.3lf s\r", current_timestamp / 1000);
 			timestamp_report_counter = timestamp_report_delay;
 		}
 		if (server_is_processing && current_request_processing_end < next_request_arrival)
@@ -258,13 +258,14 @@ Parameters - mean request delay = %.3f ms,\n\
 		 *----------------------------------*/
 		http_request arriving_event;
 		arriving_event.timestamp = next_request_arrival;
-		arriving_event.waiting_time = -1.f;
-		arriving_event.service_time = -1.f;
+		arriving_event.waiting_time = -1.;
+		arriving_event.service_time = -1.;
 		if (server_is_processing)
 		{
 			if (!queue_push(request_queue, (void*) &arriving_event))
 			{
 				rejected_requests++;
+				//fprintf(stderr, "Rejected request, ts=%lf, req_queue=%d/%d\n", next_request_arrival, request_queue->q_length, request_queue->max_q_length);
 			}
 			else total_queued_requests++;
 			queue_len_log dp;
@@ -275,7 +276,7 @@ Parameters - mean request delay = %.3f ms,\n\
 		else
 		{
 			req_in_service = arriving_event;
-			req_in_service.waiting_time = 0.f;
+			req_in_service.waiting_time = 0.;
 			server_is_processing = 1;
 			current_request_processing_end = next_request_arrival + rand_exponential(mean_service_time);
 			total_queued_requests++;
@@ -287,35 +288,36 @@ Parameters - mean request delay = %.3f ms,\n\
 	}
 	printf("                                           \n");
 	printf("Total requests: %u\n", total_requests);
-	printf("|-- Total queued requests: %u/%u (%.2f%%)\n", total_queued_requests, total_requests, 100.f * total_queued_requests / total_requests);
-	printf("|    |\n|    |-- Served requests: %u/%u (%.2f%%)\n", served_requests, total_queued_requests, 100.f * served_requests / total_queued_requests);
-	printf("|    |-- Discarded requests (timeout): %u/%u (%.2f%%)\n", discarded_requests, total_queued_requests, 100.f * discarded_requests / total_queued_requests);
-	printf("|    +-- Requests still in queue: %u/%u (%.2f%%)\n", total_queued_requests - served_requests - discarded_requests, total_queued_requests, 100.f * (total_queued_requests - served_requests - discarded_requests) / total_queued_requests);
-	printf("|\n+-- Rejected requests (full queue): %u/%u (%.2f%%)\n\n", rejected_requests, total_requests, 100.f * rejected_requests / total_requests);
+	printf("|-- Total queued requests: %u/%u (%.2lf%%)\n", total_queued_requests, total_requests, 100. * total_queued_requests / total_requests);
+	printf("|    |\n|    |-- Served requests: %u/%u (%.2lf%%)\n", served_requests, total_queued_requests, 100. * served_requests / total_queued_requests);
+	printf("|    |-- Discarded requests (timeout): %u/%u (%.2lf%%)\n", discarded_requests, total_queued_requests, 100. * discarded_requests / total_queued_requests);
+	printf("|    +-- Requests still in queue: %u/%u (%.2lf%%)\n", total_queued_requests - served_requests - discarded_requests, total_queued_requests, 100. * (total_queued_requests - served_requests - discarded_requests) / total_queued_requests);
+	printf("|\n+-- Rejected requests (full queue): %u/%u (%.2lf%%)\n\n", rejected_requests, total_requests, 100. * rejected_requests / total_requests);
 	
-	float timebase_mult = 1.f/1000;
-	float arrival_rate = total_requests / (max_simulation_time * timebase_mult);
-	float throughput = served_requests / (max_simulation_time * timebase_mult);
-	float reject_rate = rejected_requests / (max_simulation_time * timebase_mult);
-	float timeout_rate = discarded_requests / (max_simulation_time * timebase_mult);
-	float server_load = 0.f;
-	float server_usage = 0.f;
+	double timebase_mult = 1./1000;
+	double arrival_rate = total_requests / (max_simulation_time * timebase_mult);
+	double throughput = served_requests / (max_simulation_time * timebase_mult);
+	double reject_rate = rejected_requests / (max_simulation_time * timebase_mult);
+	double timeout_rate = discarded_requests / (max_simulation_time * timebase_mult);
+	double server_load = 0.;
+	double server_usage = 0.;
 	double queue_length_avg = 0.;
 	uint32_t queue_length_max = 0;
 	double queue_length_variance = 0.;
-	float turnaround_avg = 0.f;
-	float turnaround_stdev = 0.f;
-	float service_avg = 0.f;
-	float service_stdev = 0.f;
+	double turnaround_avg = 0.;
+	double turnaround_stdev = 0.;
+	double service_avg = 0.;
+	double service_stdev = 0.;
 	
 	uint32_t i;
 	for (i = 0; i < request_log->q_length; i++)
 	{
 		http_request *req = (http_request*) queue_index(request_log, i);
-		float turnaround = req->waiting_time + req->service_time;
+		double turnaround = req->waiting_time + req->service_time;
 		turnaround_avg += turnaround;
 		service_avg += req->service_time;
 		server_usage += req->service_time;
+		//fprintf(stderr, "Request arrived at %lf: waited %lf, served in %lf\n", req->timestamp, req->waiting_time, req->service_time);
 	}
 	if (server_is_processing) server_usage += max_simulation_time - ((http_request*) queue_index(request_log, -1))->timestamp - ((http_request*) queue_index(request_log, -1))->waiting_time;
 	turnaround_avg /= request_log->q_length;
@@ -325,8 +327,8 @@ Parameters - mean request delay = %.3f ms,\n\
 	for (i = 0; i < request_log->q_length; i++)
 	{
 		http_request *req = (http_request*) queue_index(request_log, i);
-		float turnaround = req->waiting_time + req->service_time;
-		float partial_stdev;
+		double turnaround = req->waiting_time + req->service_time;
+		double partial_stdev;
 		partial_stdev = turnaround - turnaround_avg;
 		turnaround_stdev += partial_stdev * partial_stdev;
 		partial_stdev = req->service_time - service_avg;
@@ -343,28 +345,29 @@ Parameters - mean request delay = %.3f ms,\n\
 		queue_len_log *nextdp = (queue_len_log*) queue_index(request_queue_log, i + 1);
 		queue_length_avg += dp->length * ((i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp);
 		if (dp->length > queue_length_max) queue_length_max = dp->length;
+		//fprintf(stderr, "Queue length at %lf: %d\n", dp->timestamp, dp->length);
 	}
 	queue_length_avg /= max_simulation_time;
 	for (i = 0; i < request_queue_log->q_length; i++)
 	{
 		queue_len_log *dp = (queue_len_log*) queue_index(request_queue_log, i);
 		queue_len_log *nextdp = (queue_len_log*) queue_index(request_queue_log, i + 1);
-		float deviation = (dp->length - queue_length_avg);
-		float partial_variance = deviation * deviation * ((i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp) / max_simulation_time;
+		double deviation = (dp->length - queue_length_avg);
+		double partial_variance = deviation * deviation * ((i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp) / max_simulation_time;
 		queue_length_variance += partial_variance;
 	}
 
 	const char* unit = "requests/s";
-	printf("Arrival rate: %f %s\n", arrival_rate, unit);
-	printf("Throughput: %f %s\n", throughput, unit);
-	printf("Avg dropped request rate: %f %s\n", reject_rate, unit);
-	printf("Avg discarded (timed out) request rate: %f %s\n", timeout_rate, unit);
-	printf("Server load: %f\n", server_load);
-	printf("Server busy time: %.3f%%\n", server_usage * 100);
-	printf("Calculated max throughput: %f %s\n\n", throughput / server_usage, unit);
-	printf("Queue length: avg %lf, max %u/%u, stdev %f\n", queue_length_avg, queue_length_max, request_queue_length_max, sqrt(queue_length_variance));
-	printf("Turnaround time: avg %f, stdev %f\n", turnaround_avg, turnaround_stdev);
-	printf("Service time: avg %f, stdev %f\n", service_avg, service_stdev);
+	printf("Arrival rate: %lf %s\n", arrival_rate, unit);
+	printf("Throughput: %lf %s\n", throughput, unit);
+	printf("Avg dropped request rate: %lf %s\n", reject_rate, unit);
+	printf("Avg discarded (timed out) request rate: %lf %s\n", timeout_rate, unit);
+	printf("Server load: %lf\n", server_load);
+	printf("Server busy time: %.3lf%%\n", server_usage * 100);
+	printf("Calculated max throughput: %lf %s\n\n", throughput / server_usage, unit);
+	printf("Queue length: avg %lf, max %u/%u, stdev %lf\n", queue_length_avg, queue_length_max, request_queue_length_max, sqrt(queue_length_variance));
+	printf("Turnaround time: avg %lf, stdev %lf\n", turnaround_avg, turnaround_stdev);
+	printf("Service time: avg %lf, stdev %lf\n", service_avg, service_stdev);
 
 	request_queue = queue_free(request_queue);
 	return 0;
