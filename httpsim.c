@@ -71,7 +71,6 @@ void try_enqueue (queue **q, void *dptr)
 
 int main (int argc, char** argv)
 {
-	/* TODO: Read these from arguments */
 	uint32_t request_queue_length_max = 50;
 	double request_mean_delay = 15.;
 	double mean_service_time = 20.;
@@ -200,7 +199,7 @@ Parameters - mean request delay = %.3lf ms,\n\
 	{
 		if (--timestamp_report_counter == 0)
 		{
-			//fprintf(stderr, "Current time: %5.3lf s\r", current_timestamp / 1000);
+			fprintf(stderr, "Current time: %5.3lf s\r", current_timestamp / 1000);
 			timestamp_report_counter = timestamp_report_delay;
 		}
 		if (server_is_processing && current_request_processing_end < next_request_arrival)
@@ -345,7 +344,7 @@ Parameters - mean request delay = %.3lf ms,\n\
 		queue_len_log *nextdp = (queue_len_log*) queue_index(request_queue_log, i + 1);
 		queue_length_avg += dp->length * ((i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp);
 		if (dp->length > queue_length_max) queue_length_max = dp->length;
-		//fprintf(stderr, "Queue length at %lf: %d\n", dp->timestamp, dp->length);
+		//fprintf(stderr, "%lf: Queue log slice: %d * %lf = %lf -->\t%lf /\t%lf =\t%lf\n", dp->timestamp, dp->length, (i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp, dp->length * ((i + 1 < request_queue_log->q_length ? nextdp->timestamp : max_simulation_time) - dp->timestamp), queue_length_avg, max_simulation_time, queue_length_avg / max_simulation_time);
 	}
 	queue_length_avg /= max_simulation_time;
 	for (i = 0; i < request_queue_log->q_length; i++)
